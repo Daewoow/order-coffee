@@ -1,102 +1,153 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const addButton = document.querySelector('.add-button');
-    let beverageCounter = 1;
+let count = 1;
+document.querySelector(".add-button").addEventListener("click", () => {
+    count++;
+    let forms = document.querySelectorAll(".beverage");
+    let newForm = forms[forms.length - 1].cloneNode(true);
+    resetFormFields(newForm);
 
-    function addDeleteButton(fieldset) {
-        const deleteButton = document.createElement('button');
-        deleteButton.type = 'button';
-        deleteButton.className = 'delete-button';
-        deleteButton.innerHTML = '×';
+    let newTextarea = newForm.querySelector('.user-text');
+    let newOutput = newForm.querySelector('.user-output');
 
-        deleteButton.addEventListener('click', function() {
-            const allBeverages = document.querySelectorAll('.beverage');
-            if (allBeverages.length > 1) {
-                fieldset.remove();
-                updateBeverageNumbers();
-            }
-        });
+    newTextarea.addEventListener('input', function () {
+        const userInput = this.value;
+        newOutput.innerHTML = highlightKeywords(userInput);
+    });
 
-        fieldset.style.position = 'relative';
-        fieldset.appendChild(deleteButton);
+    for (let radio of newForm.querySelectorAll("input[type=radio]")) {
+        radio.name = "milk" + count;
     }
 
-    function updateBeverageNumbers() {
-        const allBeverages = document.querySelectorAll('.beverage');
-        allBeverages.forEach((beverage, index) => {
-            beverage.querySelector('.beverage-count').textContent = `Напиток №${index + 1}`;
-        });
-        beverageCounter = allBeverages.length + 1;
+    let removeButton = newForm.querySelector(".remove-button");
+    removeButton.addEventListener("click", () => {
+        if (count > 1) {
+            newForm.remove();
+            count--;
+        }
+    });
+    forms[forms.length - 1].after(newForm);
+});
+
+document.querySelectorAll('.user-text').forEach(textarea => {
+    textarea.addEventListener('input', function () {
+        const userInput = this.value;
+        const outputElement = this.parentElement.querySelector('.user-output');
+        outputElement.innerHTML = highlightKeywords(userInput);
+    });
+});
+
+document.querySelector('.submit-button').addEventListener('click', (event) => {
+    event.preventDefault();
+    openModal();
+    updateModalTable();
+});
+
+document.querySelector('.close-model').addEventListener('click', () => {
+    closeModal();
+});
+
+document.querySelector('.confirm-button').addEventListener('click', () => {
+    const timeInput = document.querySelector('#order-time');
+    const value = timeInput.value;
+    const now = new Date();
+
+    if (!value) {
+        timeInput.classList.add('error');
+        alert('Выберите время заказа');
+        return;
     }
 
-    const initialBeverage = document.querySelector('.beverage');
-    addDeleteButton(initialBeverage);
+    const [hours, minutes] = value.split(':').map(Number);
+    const orderTime = new Date(now);
+    orderTime.setHours(hours, minutes, 0, 0);
 
-    addButton.addEventListener('click', function() {
-        const newBeverage = initialBeverage.cloneNode(true);
-
-        newBeverage.querySelector('.beverage-count').textContent = `Напиток №${beverageCounter}`;
-        beverageCounter++;
-
-        const select = newBeverage.querySelector('select');
-        select.selectedIndex = 1;
-
-        const radios = newBeverage.querySelectorAll('input[type="radio"]');
-        radios.forEach(radio => {
-            radio.checked = radio.value === 'usual';
-        });
-
-        const checkboxes = newBeverage.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-
-        addDeleteButton(newBeverage);
-
-        form.insertBefore(newBeverage, addButton.parentElement);
-    });
+    if (orderTime <= now) {
+        timeInput.classList.add('error');
+        alert('Мы не умеем перемещаться во времени. Выберите время позже, чем текущее  🤦‍♀️ 🤦‍♀️ 🤦‍♀️');
+    } else {
+        closeModal();
+    }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const addButton = document.querySelector('.add-button');
 
-    let beverageCounter = 1;
+function openModal() {
+    const overlay = document.querySelector('.overlay');
+    overlay.style.visibility = 'visible';
+    document.querySelector('.status-order').textContent = updateBeverageCount();
+}
 
-    addButton.addEventListener('click', () => {
-        beverageCounter++;
+function resetFormFields(form) {
+    form.querySelector("h4").innerHTML = `Напиток №${count}`;
+    form.querySelector('select').selectedIndex = 1;
+    form.querySelector('input[type="radio"][value="usual"]').checked = true;
+    form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    form.querySelector('.user-text').value = '';
+    form.querySelector('.user-output').textContent = '';
+}
 
-        const newBeverageForm = document.querySelector('.beverage').cloneNode(true);
+function updateBeverageCount() {
+    const num = document.querySelectorAll('fieldset').length;
+    const mod = num % 10;
+    return `Заказ принят! Вы заказали ${num} ${num !== 11 && mod === 1 ?
+        'напиток'
+        : (num > 20 && (mod === 2 || mod === 3 || mod === 4)) || (num >= 2 && num <= 4) ?
+            'напитка'
+            : 'напитков'}`;
+}
 
-        newBeverageForm.querySelector('.beverage-count').textContent = `Напиток №${beverageCounter}`;
+function closeModal() {
+    const overlay = document.querySelector('.overlay');
+    overlay.style.visibility = 'hidden';
+}
 
-        const radioButtons = newBeverageForm.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach(button => {
-            button.name = `milk-${beverageCounter}`;
+let dict = {
+    'espresso': 'Эспрессо',
+    'capuccino': 'Капучино',
+    'cacao': 'Какао',
+    'usual': 'Обычное',
+    'no-fat': 'Обезжиренное',
+    'soy': 'Соевое',
+    'coconut': 'Кокосовое',
+}
+
+function highlightKeywords(text) {
+    const keywords = ['срочно', 'быстрее', 'побыстрее', 'скорее', 'поскорее', 'очень нужно'];
+    const regex = new RegExp(keywords.join('|'), 'gi');
+    return text.replace(regex, match => `<b>${match}</b>`);
+}
+
+function updateModalTable() {
+    const beverages = [];
+    const fields = document.querySelectorAll('.beverage');
+
+    fields.forEach((field, index) => {
+        const beverageName = field.querySelector('select').value;
+        const milkType = field.querySelector('input[type="radio"]:checked').value;
+        const extras = [];
+        field.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+            extras.push(checkbox.nextElementSibling.textContent);
         });
-
-        const checkboxes = newBeverageForm.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.name = `options-${beverageCounter}`;
+        const userText = field.querySelector('.user-text').value;
+        beverages.push({
+            beverage: dict[beverageName],
+            milk: dict[milkType],
+            extras: extras.join(', '),
+            wishes: userText
         });
-
-        const form = document.querySelector('form');
-        form.insertBefore(newBeverageForm, addButton.parentElement);
-    });
-});
-document.addEventListener('DOMContentLoaded', () => {
-    const submit = document.querySelector('.submit-button');
-    const lightboxBlock = document.querySelector('.lightbox_block');
-    const lightboxBackdrop = document.querySelector('.lightbox_backdrop');
-    const lightboxClose = document.querySelector('.lightbox_close');
-
-    submit.addEventListener('click', (e) => {
-        e.preventDefault();
-        lightboxBlock.style.display = 'flex';
-        lightboxBackdrop.style.display = 'block';
     });
 
-    lightboxClose.addEventListener('click', () => {
-        lightboxBlock.style.display = 'none';
-        lightboxBackdrop.style.display = 'none';
+    const modalTableBody = document.querySelector('.modal-table tbody');
+    modalTableBody.innerHTML = '';
+
+    beverages.forEach(beverage => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${beverage.beverage}</td>
+            <td>${beverage.milk}</td>
+            <td>${beverage.extras}</td>
+            <td>${beverage.wishes}</td>
+        `;
+        modalTableBody.appendChild(row);
     });
-});
+}
