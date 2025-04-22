@@ -1,8 +1,11 @@
 
 .beverage {
-    border: 1px solid #eee;
-    margin: 15px 0;
+    position: relative;
     padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
 }
 
 .beverage-count {
@@ -27,6 +30,21 @@
 .checkbox-field {
     margin: 5px 0;
     display: block;
+}
+
+.remove-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #ff0000;
+}
+
+.remove-button:hover {
+    color: #cc0000;
 }
 
 .add-button {
