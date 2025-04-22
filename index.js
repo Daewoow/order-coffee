@@ -1,26 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const addButton = document.querySelector('.add-button');
+    const submit = document.querySelector('.submit-button');
+    const lightboxBlock = document.querySelector('.lightbox_block');
+    const lightboxBackdrop = document.querySelector('.lightbox_backdrop');
+    const lightboxClose = document.querySelector('.lightbox_close');
 
-    let beverageCounter = 1;
+    submit.addEventListener('click', (e) => {
+        e.preventDefault();
+        lightboxBlock.style.display = 'flex';
+        lightboxBackdrop.style.display = 'block';
+    });
 
-    addButton.addEventListener('click', () => {
-        beverageCounter++;
-
-        const newBeverageForm = document.querySelector('.beverage').cloneNode(true);
-
-        newBeverageForm.querySelector('.beverage-count').textContent = `Напиток №${beverageCounter}`;
-
-        const radioButtons = newBeverageForm.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach(button => {
-            button.name = `milk-${beverageCounter}`;
-        });
-
-        const checkboxes = newBeverageForm.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.name = `options-${beverageCounter}`;
-        });
-
-        const form = document.querySelector('form');
-        form.insertBefore(newBeverageForm, addButton.parentElement);
+    lightboxClose.addEventListener('click', () => {
+        lightboxBlock.style.display = 'none';
+        lightboxBackdrop.style.display = 'none';
     });
 });
