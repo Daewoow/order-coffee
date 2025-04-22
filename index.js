@@ -1,4 +1,16 @@
 let count = 1;
+
+let forms = document.querySelectorAll(".beverage");
+let newForm = forms[forms.length - 1];
+let removeButton = newForm.querySelectorAll(".remove-button");
+console.log(removeButton);
+removeButton.forEach(e => e.addEventListener("click", () => {
+    if (count > 1) {
+        newForm.remove();
+        count--;
+    }
+}));
+
 document.querySelector(".add-button").addEventListener("click", () => {
     count++;
     let forms = document.querySelectorAll(".beverage");
@@ -17,15 +29,17 @@ document.querySelector(".add-button").addEventListener("click", () => {
         radio.name = "milk" + count;
     }
 
-    let removeButton = newForm.querySelector(".remove-button");
-    removeButton.addEventListener("click", () => {
+    let removeButton = newForm.querySelectorAll(".remove-button");
+    console.log(removeButton);
+    removeButton.forEach(e => e.addEventListener("click", () => {
         if (count > 1) {
             newForm.remove();
             count--;
         }
-    });
+    }));
     forms[forms.length - 1].after(newForm);
 });
+
 
 document.querySelectorAll('.user-text').forEach(textarea => {
     textarea.addEventListener('input', function () {
